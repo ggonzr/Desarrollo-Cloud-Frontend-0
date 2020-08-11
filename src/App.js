@@ -1,26 +1,29 @@
+//Importar el core de React
 import React from 'react';
-import logo from './logo.svg';
-import './App.css';
+//Importar el core de Router
+import {
+    BrowserRouter as Router,    
+    Route,
+    Switch
+} from "react-router-dom";
 
-function App() {
+//Importar los componentes a renderizar
+import Panel from './components/Panel';
+import SignIn from './components/SignIn';
+import SignUp from './components/SignUp';
+
+//Aplicación principal de tablero de control para controlar el servidor
+//En este archivo dejaremos las rutas principales de la aplicación, la cual consta de 2
+// #1 - Formulario de inicio de sesión; #2 - Tablero de control para encender o apagar el servidor
+
+export default function App() {    
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    <Router>
+      <Switch>
+      <Route exact path="/" component={SignIn}/>
+      <Route path="/panel" component={Panel}/>
+      <Route path="/signUp" component={SignUp}/>                
+      </Switch>
+    </Router>
   );
 }
-
-export default App;
