@@ -38,3 +38,15 @@ export async function SignUp(usuario, contraseña, nombres, apellidos, email) {
   return response;
 }
 
+export async function getAllEvents() {
+  let token = `Token ${localStorage.getItem('token')}`;
+  let response = await axios({
+    method: 'get',
+    url: hostname + 'api/events/',
+    headers: {
+      'Authorization': token
+    }
+  });
+  return response;
+}
+
