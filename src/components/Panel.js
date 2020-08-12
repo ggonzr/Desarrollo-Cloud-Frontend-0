@@ -9,21 +9,14 @@ import MenuItem from '@material-ui/core/MenuItem';
 import Menu from '@material-ui/core/Menu';
 import MenuIcon from '@material-ui/icons/Menu';
 import SearchIcon from '@material-ui/icons/Search';
-import AnnouncementIcon from '@material-ui/icons/Announcement';
 import AccountCircle from '@material-ui/icons/AccountCircle';
 import NoteAddIcon from '@material-ui/icons/NoteAdd';
 import Paper from '@material-ui/core/Paper';
 import Grid from '@material-ui/core/Grid';
 import List from '@material-ui/core/List';
-import ListItem from '@material-ui/core/ListItem';
-import ListItemIcon from '@material-ui/core/ListItemIcon';
-import ListItemText from '@material-ui/core/ListItemText';
-import Collapse from '@material-ui/core/Collapse';
-import ExpandLess from '@material-ui/icons/ExpandLess';
-import ExpandMore from '@material-ui/icons/ExpandMore';
-import StarBorder from '@material-ui/icons/StarBorder';
 import { useHistory } from 'react-router-dom';
 import { getAllEvents } from '../services/backend-services';
+import EventElement from '../components/Event';
 
 const useStyles = makeStyles((theme) => ({
   grow: {
@@ -103,8 +96,7 @@ export default function PrimarySearchAppBar() {
   const classes = useStyles();
   const history = useHistory();
   const [anchorEl, setAnchorEl] = React.useState(null);  
-  const isMenuOpen = Boolean(anchorEl);  
-  const [open, setOpen] = React.useState(false);
+  const isMenuOpen = Boolean(anchorEl);    
   const [eventList, setEventList] = React.useState([]);
 
   //Comprobar si el usuario está autorizado  
@@ -117,7 +109,8 @@ export default function PrimarySearchAppBar() {
 
   React.useEffect(() => {
     async function getData() {
-      let response = await getAllEvents();      
+      let response = await getAllEvents(); 
+      console.log("Eventos", response.data)     
       setEventList(response.data)
     } 
     getData();   
@@ -129,10 +122,6 @@ export default function PrimarySearchAppBar() {
   
   const handleMenuClose = () => {
     setAnchorEl(null);   
-  };
-
-  const handleClick = () => {
-    setOpen(!open);
   };
   
   const menuId = 'primary-search-account-menu';
@@ -201,33 +190,9 @@ export default function PrimarySearchAppBar() {
       {renderMenu}
     </div>
     );
-  };
+  };  
 
-  const EventElement = ({info}) =>{
-    return (
-      <div>
-      <ListItem button onClick={handleClick}>
-        <ListItemIcon>
-          <AnnouncementIcon />
-        </ListItemIcon>
-       <ListItemText primary="Inbox" />
-       {open ? <ExpandLess /> : <ExpandMore />}
-      </ListItem>
-      <Collapse in={open} timeout="auto" unmountOnExit>
-        <List component="div" disablePadding>
-          <ListItem button className={classes.nested}>
-            <ListItemIcon>
-              <StarBorder />
-            </ListItemIcon>
-           <ListItemText primary="Starred" />
-         </ListItem>
-       </List>
-      </Collapse>
-      </div>
-    );
-  };
-
-  const EventList = ({list}) => {    
+  const EventList = ({list}) => {        
     return (
       <div>
         <Typography className={classes.title} variant="h6" noWrap>
@@ -237,8 +202,8 @@ export default function PrimarySearchAppBar() {
           component="nav"
           aria-labelledby="lista-de-eventos"          
           className={classes.eventList}
-        >     
-        <EventElement/> 
+        >             
+        {list.map((el, idx) => <EventElement key={idx} info={el} classes={classes}/>)}       
         </List>
       </div>
     );
@@ -250,7 +215,7 @@ export default function PrimarySearchAppBar() {
       <Grid container>
         <Grid item xs={6}>
             <Paper className={classes.paper}>
-              <EventList/>
+              <EventList list={eventList}/>
             </Paper>
         </Grid>
         <Grid item xs={6}>
