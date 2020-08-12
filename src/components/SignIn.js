@@ -26,8 +26,7 @@ async function auth({usuario, contraseña, toastr, setToastr, history}) {
     return;   
   }
 
-  let autenticado = await bSignIn(usuario, contraseña);
-  console.log(autenticado);
+  let autenticado = await bSignIn(usuario, contraseña);  
 
   if (autenticado.status !== 200) {
     let errorMessage = "El usuario y/o la contraseña ingresada no son validos, verifique sus credenciales";

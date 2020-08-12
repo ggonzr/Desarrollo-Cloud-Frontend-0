@@ -7,7 +7,12 @@ import ListItemText from '@material-ui/core/ListItemText';
 import Collapse from '@material-ui/core/Collapse';
 import ExpandLess from '@material-ui/icons/ExpandLess';
 import ExpandMore from '@material-ui/icons/ExpandMore';
-import StarBorder from '@material-ui/icons/StarBorder';
+import EventAvailableIcon from '@material-ui/icons/EventAvailable';
+import EventBusyIcon from '@material-ui/icons/EventBusy';
+import PlaceIcon from '@material-ui/icons/Place';
+import ClassIcon from '@material-ui/icons/Class';
+import DuoIcon from '@material-ui/icons/Duo';
+import { Button } from '@material-ui/core';
 
 export default function EventElement ({info, classes}) {
     const [infoElement] = React.useState(info);
@@ -16,6 +21,9 @@ export default function EventElement ({info, classes}) {
     const handleClick = () => {
         setOpen(!open);
     };
+
+    const fechaInicio = new Date(infoElement.event_initial_date);
+    const fechaFin = new Date(infoElement.event_final_date);
 
     console.log("Elemento recibido", info)
     return (
@@ -31,9 +39,59 @@ export default function EventElement ({info, classes}) {
         <List component="div" disablePadding>
           <ListItem button className={classes.nested}>
             <ListItemIcon>
-              <StarBorder />
+              <ClassIcon />
             </ListItemIcon>
-           <ListItemText primary="Starred" />
+           <ListItemText primary={`Categoria: ${infoElement.event_category}`}/>
+         </ListItem>
+         <ListItem button className={classes.nested}>
+            <ListItemIcon>
+              <EventAvailableIcon />
+            </ListItemIcon>
+           <ListItemText primary={`Fecha de Inicio: ${fechaInicio}`}/>
+         </ListItem>
+         <ListItem button className={classes.nested}>
+            <ListItemIcon>
+              <EventBusyIcon />
+            </ListItemIcon>
+           <ListItemText primary={`Fecha Final: ${fechaFin}`}/>
+         </ListItem>
+         <ListItem button className={classes.nested}>
+            <ListItemIcon>
+              <PlaceIcon />
+            </ListItemIcon>
+           <ListItemText primary={`Lugar: ${infoElement.event_place}`}/>
+         </ListItem>
+         <ListItem button className={classes.nested}>
+            <ListItemIcon>
+              <DuoIcon />
+            </ListItemIcon>
+           <ListItemText primary={`Tipo: ${infoElement.event_type}`}/>
+         </ListItem>
+         <ListItem button className={classes.nested}>
+            <ListItem className={classes.nested}>
+                <Button
+                    variant="contained"
+                    color="primary"
+                    onClick={(event) => {                
+                        event.preventDefault();
+                        console.log("Actualizar clickeado")
+                    }}
+                >
+                    Actualizar
+                </Button>
+            </ListItem>   
+            <ListItem button className={classes.nested}>
+            <Button
+                    variant="contained"
+                    color="secondary"
+                    onClick={(event) => {                
+                        event.preventDefault();
+                        console.log("Eliminar clickeado")
+                    }}
+                >
+                    Eliminar
+                </Button>
+            </ListItem>   
          </ListItem>
        </List>
       </Collapse>

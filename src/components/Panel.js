@@ -109,8 +109,7 @@ export default function PrimarySearchAppBar() {
 
   React.useEffect(() => {
     async function getData() {
-      let response = await getAllEvents(); 
-      console.log("Eventos", response.data)     
+      let response = await getAllEvents();       
       setEventList(response.data)
     } 
     getData();   
@@ -213,7 +212,7 @@ export default function PrimarySearchAppBar() {
     <div>
       <NavBar/>
       <Grid container>
-        <Grid item xs={6}>
+        <Grid item xs={12} sm={6}>
             <Paper className={classes.paper}>
               <EventList list={eventList}/>
             </Paper>
