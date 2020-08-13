@@ -72,9 +72,7 @@ export default function EventElement ({idx, info, classes, deleteElement, update
                 <Button
                     variant="contained"
                     color="primary"
-                    onClick={(event) => {                
-                        event.preventDefault();
-                        console.log("Actualizar clickeado");
+                    onClick={(event) => {                                                                
                         updateElement({idx: idx});
                     }}
                 >

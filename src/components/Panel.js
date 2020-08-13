@@ -2,24 +2,19 @@ import React from 'react';
 import { fade, makeStyles } from '@material-ui/core/styles';
 import AppBar from '@material-ui/core/AppBar';
 import Toolbar from '@material-ui/core/Toolbar';
-import TextField from '@material-ui/core/TextField';
-import FormControl from '@material-ui/core/FormControl';
-import InputLabel from '@material-ui/core/InputLabel';
-import Select from '@material-ui/core/Select';
-import Button from '@material-ui/core/Button';
 import IconButton from '@material-ui/core/IconButton';
 import Typography from '@material-ui/core/Typography';
 import EventNote from '@material-ui/icons/EventNote';
-import FileCopyIcon from '@material-ui/icons/FileCopy';
 import AccountCircle from '@material-ui/icons/AccountCircle';
 import NoteAddIcon from '@material-ui/icons/NoteAdd';
 import Paper from '@material-ui/core/Paper';
 import Grid from '@material-ui/core/Grid';
 import List from '@material-ui/core/List';
 import { useHistory } from 'react-router-dom';
-import { getAllEvents, updateEvent, createEvent } from '../services/backend-services';
+import { getAllEvents } from '../services/backend-services';
 import EventElement from '../components/Event';
-import moment from 'moment';
+import CreateEvent from '../components/CreateEvent';
+import UpdateEvent from '../components/UpdateEvent';
 
 const useStyles = makeStyles((theme) => ({
   grow: {
@@ -117,9 +112,7 @@ export default function PrimarySearchAppBar() {
   const classes = useStyles();
   const history = useHistory();  
   const [eventList, setEventList] = React.useState([]);  
-  const [actualEvent, setActualEvent] = React.useState(-1);
-  const [category, setCategory] = React.useState('');
-  const [type, setType] = React.useState('');
+  const [actualEvent, setActualEvent] = React.useState(-1);  
 
   //Comprobar si el usuario está autorizado  
   React.useLayoutEffect(() => {
@@ -147,19 +140,40 @@ export default function PrimarySearchAppBar() {
 
   const menuId = 'primary-search-account-menu';  
   
+  //Cerrar sesión en el sistema
   const closeSession = () => {
     localStorage.removeItem('token');
     return history.replace('/');
   };
   
-  const readFile = (ev) => {
-    let file = ev.target.files[0];    
-    if (!file) {
-      return;
+  //Renderizar el panel derecho de acuerdo al elemento
+  //necesario
+  const RenderPanel = ({idx}) => {
+    let el = idx.idx;
+    console.log("Render panel clickeado", el);
+    if (el >= 0) {
+      let element = eventList[el];
+      return (
+        <UpdateEvent
+          pEvent={element}
+          classes={classes}
+          updateEventInferface={setActualEvent}
+        />
+      );      
     }    
-    return file;
-  };  
-  
+    else if (el === -2) {
+      return (
+        <CreateEvent                    
+          classes={classes}
+          updateEventInferface={setActualEvent}
+        />
+      );
+    }
+    else {
+      return null;
+    }    
+  };
+
   const NavBar = () => {
     return (
     <div className={classes.grow}>
@@ -182,7 +196,7 @@ export default function PrimarySearchAppBar() {
              aria-label="crear un nuevo evento"
              color="inherit"
              onClick={(ev) => {
-                setActualEvent(-2);
+                setActualEvent({idx: -2});
               }}
              >              
                 <NoteAddIcon/>              
@@ -192,7 +206,7 @@ export default function PrimarySearchAppBar() {
               aria-label="account of current user"
               aria-controls={menuId}
               aria-haspopup="true"
-              onClick={closeSession}
+              onClick={() => closeSession()}
               color="inherit"
             >
               <AccountCircle />
@@ -204,324 +218,7 @@ export default function PrimarySearchAppBar() {
     );
   };
   
-  //Permite actualizar un evento en el sistema
-  const UpdateEvent = ({idx}) => { 
-    console.log("Valor idx", idx);
-    if (idx === -1 || idx === -2) {
-      return null;
-    }
-    else {      
-      let event = eventList[idx.idx]; 
-      event.event_initial_date = moment(event.event_initial_date, 'YYYY-MM-DDTHH:mm:ssZ').format('YYYY-MM-DDTHH:mm');
-      event.event_final_date = moment(event.event_final_date, 'YYYY-MM-DDTHH:mm:ssZ').format('YYYY-MM-DDTHH:mm');
-      console.log("Evento", event)  
-      setCategory(event.event_category);                            
-      return (        
-        <Grid item xs={12} sm={6}>
-          <Paper className={classes.paper}>
-            <Typography className={classes.title} variant="h6" noWrap>
-                {event.event_name}
-            </Typography>
-            <TextField
-              className={classes.textField}
-              variant="outlined"
-              margin="normal"
-              required              
-              name="event_address"
-              label="Nuevo nombre del evento"
-              type="text"
-              id="event_title"
-              defaultValue={event.event_name}     
-              onChange={(ev) => {
-                event.event_name = ev.target.value;
-              }}
-            />
-            <TextField
-              className={classes.textField}
-              variant="outlined"
-              margin="normal"
-              required              
-              name="event_address"
-              label="Dirección del evento"
-              type="text"
-              id="event_address"
-              defaultValue={event.event_address}     
-              onChange={(ev) => {
-                event.event_address = ev.target.value;
-              }}
-            />
-            <TextField
-              className={classes.textField}
-              variant="outlined"
-              margin="normal"
-              required              
-              name="event_place"
-              label="Lugar del evento"
-              type="text"
-              id="event_place"
-              defaultValue={event.event_place}     
-              onChange={(ev) => {
-                event.event_place = ev.target.value;
-              }}
-            />
-            <FormControl variant="outlined" className={classes.formControl}>
-              <InputLabel 
-                className={classes.formLabel} 
-                htmlFor="filled-age-native-simple"
-              >
-                Categoria
-              </InputLabel>
-              <Select
-                native
-                value={category}
-                onChange={(ev) =>{
-                  ev.preventDefault();                  
-                  event.event_category = ev.target.value;
-                  setCategory(event.event_category);                  
-                }}                
-              >                
-                <option value={"COURSE"}>Curso</option>
-                <option value={"CONFERENCE"}>Conferencia</option>
-                <option value={"SEMINAR"}>Seminario</option>
-                <option value={"CONGRESS"}>Congreso</option>
-              </Select>              
-            </FormControl>
-            <FormControl variant="outlined" className={classes.formControl}>
-              <InputLabel 
-                className={classes.formLabel} 
-                htmlFor="filled-age-native-simple"
-              >
-                Tipo de evento
-              </InputLabel>
-              <Select
-                native
-                value={type}
-                onChange={(ev) =>{
-                  ev.preventDefault();                  
-                  event.event_type = ev.target.value;
-                  setType(event.event_type);
-                }}                
-              >                
-                <option value={"VIRTUAL"}>Virtual</option>
-                <option value={"PRESENCIAL"}>Presencial</option>                
-              </Select>              
-            </FormControl>
-            <FormControl variant="outlined" className={classes.formControl}>
-            <TextField
-              id="datetime-local"
-              label="Fecha de inicio"
-              type="datetime-local"
-              defaultValue={event.event_initial_date}
-              className={classes.textField}
-              InputLabelProps={{
-                shrink: true,
-              }}
-              onChange={(ev) =>{
-                console.log("Fecha seleccionada", ev.target.value);
-              }}
-            />
-            <TextField
-              id="datetime-local"
-              label="Fecha final"
-              type="datetime-local"
-              defaultValue={event.event_final_date}
-              className={classes.textField}
-              InputLabelProps={{
-                shrink: true,
-              }}
-              onChange={(ev) =>{
-                console.log("Fecha seleccionada", ev.target.value);
-              }}
-            />
-            </FormControl>
-            <Button
-              type="submit"
-              className={classes.detailButton}
-              variant="contained"
-              color="primary"              
-              onClick={(ev) => {                                
-                updateEvent(event);
-                setActualEvent(-1); //Cerrar la ventana                
-              }}
-            >
-              Actualizar
-            </Button>
-          </Paper>                              
-        </Grid>        
-      );
-    }    
-  };
-
-  //Permite actualizar un evento en el sistema
-  //Con el ánimo de no sobreescribir el panel, se utilizara el indice -2 para indicar que se crea
-  //un evento.
-  const CreateEvent = ({idx}) => { 
-    if (idx !== -2) {
-      return null;
-    }
-    else {      
-      let event = {
-        'event_name': '',
-        'event_category': '',
-        'event_place': '',
-        'event_address': '',
-        'event_initial_date': '',
-        'event_final_date': '',
-        'event_type': '',        
-      };      
-      //setCategory(event.event_category);                            
-      return (        
-        <Grid item xs={12} sm={6}>
-          <Paper className={classes.paper}>
-            <Typography className={classes.title} variant="h6" noWrap>
-                Crear nuevo evento
-            </Typography>
-            <TextField
-              className={classes.textField}
-              variant="outlined"
-              margin="normal"
-              required              
-              name="event_address"
-              label="Nuevo nombre del evento"
-              type="text"
-              id="event_title"
-              defaultValue={event.event_name}     
-              onChange={(ev) => {
-                event.event_name = ev.target.value;
-              }}
-            />
-            <TextField
-              className={classes.textField}
-              variant="outlined"
-              margin="normal"
-              required              
-              name="event_address"
-              label="Dirección del evento"
-              type="text"
-              id="event_address"
-              defaultValue={event.event_address}     
-              onChange={(ev) => {
-                event.event_address = ev.target.value;
-              }}
-            />
-            <TextField
-              className={classes.textField}
-              variant="outlined"
-              margin="normal"
-              required              
-              name="event_place"
-              label="Lugar del evento"
-              type="text"
-              id="event_place"
-              defaultValue={event.event_place}     
-              onChange={(ev) => {
-                event.event_place = ev.target.value;
-              }}
-            />
-            <FormControl variant="outlined" className={classes.formControl}>
-              <InputLabel 
-                className={classes.formLabel} 
-                htmlFor="filled-age-native-simple"
-              >
-                Categoria
-              </InputLabel>
-              <Select
-                native
-                value={category}
-                onChange={(ev) =>{
-                  ev.preventDefault();                  
-                  event.event_category = ev.target.value;
-                  //setCategory(event.event_category);                  
-                }}                
-              >                
-                <option value={"COURSE"}>Curso</option>
-                <option value={"CONFERENCE"}>Conferencia</option>
-                <option value={"SEMINAR"}>Seminario</option>
-                <option value={"CONGRESS"}>Congreso</option>
-              </Select>              
-            </FormControl>
-            <FormControl variant="outlined" className={classes.formControl}>
-              <InputLabel 
-                className={classes.formLabel} 
-                htmlFor="filled-age-native-simple"
-              >
-                Tipo de evento
-              </InputLabel>
-              <Select
-                native
-                value={type}
-                onChange={(ev) =>{
-                  ev.preventDefault();                  
-                  event.event_type = ev.target.value;
-                  //setType(event.event_type);
-                }}                
-              >                
-                <option value={"VIRTUAL"}>Virtual</option>
-                <option value={"PRESENCIAL"}>Presencial</option>                
-              </Select>              
-            </FormControl>
-            <FormControl variant="outlined" className={classes.formControl}>
-            <TextField
-              id="datetime-local"
-              label="Fecha de inicio"
-              type="datetime-local"
-              defaultValue={event.event_initial_date}
-              className={classes.textField}
-              InputLabelProps={{
-                shrink: true,
-              }}
-              onChange={(ev) =>{
-                console.log("Fecha seleccionada", ev.target.value);
-                event.event_initial_date = ev.target.value;
-              }}
-            />
-            <TextField
-              id="datetime-local"
-              label="Fecha final"
-              type="datetime-local"
-              defaultValue={event.event_final_date}
-              className={classes.textField}
-              InputLabelProps={{
-                shrink: true,
-              }}
-              onChange={(ev) =>{
-                console.log("Fecha seleccionada", ev.target.value);
-                event.event_final_date = ev.target.value;
-              }}
-            />
-            </FormControl>
-            <input 
-              accept="image/*"
-              className={classes.inputFile}
-              id="icon-button-file"
-              type="file"
-              onChange={(ev) =>{
-                ev.preventDefault();
-                event.thumbnail = readFile(ev);
-              }}
-            />
-            <label htmlFor="icon-button-file">                            
-              <IconButton color="primary" aria-label="upload picture" component="span">
-                <FileCopyIcon />                
-              </IconButton>
-            </label>
-            <Button
-              type="submit"
-              className={classes.detailButton}
-              variant="contained"
-              color="primary"              
-              onClick={(ev) => {                                
-                createEvent(event);
-                setActualEvent(-1); //Cerrar la ventana                
-              }}
-            >
-              Crear
-            </Button>
-          </Paper>                              
-        </Grid>        
-      );
-    }    
-  };
+  
 
   const EventList = ({list}) => {        
     return (
@@ -557,8 +254,7 @@ export default function PrimarySearchAppBar() {
               <EventList list={eventList}/>
             </Paper>
         </Grid>
-        <UpdateEvent idx={actualEvent}/>
-        <CreateEvent idx={actualEvent}/>
+        <RenderPanel idx={actualEvent}/>
       </Grid>
     </div>
   );
