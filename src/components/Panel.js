@@ -9,18 +9,15 @@ import Select from '@material-ui/core/Select';
 import Button from '@material-ui/core/Button';
 import IconButton from '@material-ui/core/IconButton';
 import Typography from '@material-ui/core/Typography';
-import InputBase from '@material-ui/core/InputBase';
-import MenuItem from '@material-ui/core/MenuItem';
-import Menu from '@material-ui/core/Menu';
-import MenuIcon from '@material-ui/icons/Menu';
-import SearchIcon from '@material-ui/icons/Search';
+import EventNote from '@material-ui/icons/EventNote';
+import FileCopyIcon from '@material-ui/icons/FileCopy';
 import AccountCircle from '@material-ui/icons/AccountCircle';
 import NoteAddIcon from '@material-ui/icons/NoteAdd';
 import Paper from '@material-ui/core/Paper';
 import Grid from '@material-ui/core/Grid';
 import List from '@material-ui/core/List';
 import { useHistory } from 'react-router-dom';
-import { getAllEvents, updateEvent } from '../services/backend-services';
+import { getAllEvents, updateEvent, createEvent } from '../services/backend-services';
 import EventElement from '../components/Event';
 import moment from 'moment';
 
@@ -36,7 +33,10 @@ const useStyles = makeStyles((theme) => ({
     [theme.breakpoints.up('sm')]: {
       display: 'flex',
     },
-  },  
+  }, 
+  inputFile: {
+    display: 'none'
+  }, 
   paper: {
     margin: theme.spacing(2,2,2,2),
     display: 'flex',
@@ -115,9 +115,7 @@ const useStyles = makeStyles((theme) => ({
 
 export default function PrimarySearchAppBar() {
   const classes = useStyles();
-  const history = useHistory();
-  const [anchorEl, setAnchorEl] = React.useState(null);  
-  const isMenuOpen = Boolean(anchorEl);    
+  const history = useHistory();  
   const [eventList, setEventList] = React.useState([]);  
   const [actualEvent, setActualEvent] = React.useState(-1);
   const [category, setCategory] = React.useState('');
@@ -145,31 +143,22 @@ export default function PrimarySearchAppBar() {
     let newList = [...eventList];
     newList.splice(idx, 1);
     setEventList(newList);
-  };
+  };   
 
-  const handleProfileMenuOpen = (event) => {
-    setAnchorEl(event.currentTarget);
+  const menuId = 'primary-search-account-menu';  
+  
+  const closeSession = () => {
+    localStorage.removeItem('token');
+    return history.replace('/');
   };
   
-  const handleMenuClose = () => {
-    setAnchorEl(null);   
-  };
-  
-  const menuId = 'primary-search-account-menu';
-  const renderMenu = (
-    <Menu
-      anchorEl={anchorEl}
-      anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
-      id={menuId}
-      keepMounted
-      transformOrigin={{ vertical: 'top', horizontal: 'right' }}
-      open={isMenuOpen}
-      onClose={handleMenuClose}
-    >
-      <MenuItem onClick={handleMenuClose}>Profile</MenuItem>
-      <MenuItem onClick={handleMenuClose}>My account</MenuItem>
-    </Menu>
-  );
+  const readFile = (ev) => {
+    let file = ev.target.files[0];    
+    if (!file) {
+      return;
+    }    
+    return file;
+  };  
   
   const NavBar = () => {
     return (
@@ -182,27 +171,20 @@ export default function PrimarySearchAppBar() {
             color="inherit"
             aria-label="open drawer"
           >
-            <MenuIcon />
+            <EventNote />
           </IconButton>
           <Typography className={classes.title} variant="h6" noWrap>
             Eventos ABC
-          </Typography>
-          <div className={classes.search}>
-            <div className={classes.searchIcon}>
-              <SearchIcon />
-            </div>
-            <InputBase
-              placeholder="Buscar Evento ..."
-              classes={{
-                root: classes.inputRoot,
-                input: classes.inputInput,
-              }}
-              inputProps={{ 'aria-label': 'search' }}
-            />
-          </div>
+          </Typography>          
           <div className={classes.grow} />
           <div className={classes.sectionDesktop}>            
-            <IconButton aria-label="crear un nuevo evento" color="inherit">              
+            <IconButton
+             aria-label="crear un nuevo evento"
+             color="inherit"
+             onClick={(ev) => {
+                setActualEvent(-2);
+              }}
+             >              
                 <NoteAddIcon/>              
             </IconButton>
             <IconButton
@@ -210,22 +192,22 @@ export default function PrimarySearchAppBar() {
               aria-label="account of current user"
               aria-controls={menuId}
               aria-haspopup="true"
-              onClick={handleProfileMenuOpen}
+              onClick={closeSession}
               color="inherit"
             >
               <AccountCircle />
             </IconButton>
           </div>          
         </Toolbar>
-      </AppBar>      
-      {renderMenu}
+      </AppBar>            
     </div>
     );
   };
   
   //Permite actualizar un evento en el sistema
   const UpdateEvent = ({idx}) => { 
-    if (idx === -1) {
+    console.log("Valor idx", idx);
+    if (idx === -1 || idx === -2) {
       return null;
     }
     else {      
@@ -358,10 +340,182 @@ export default function PrimarySearchAppBar() {
               variant="contained"
               color="primary"              
               onClick={(ev) => {                                
-                updateEvent(event);                
+                updateEvent(event);
+                setActualEvent(-1); //Cerrar la ventana                
               }}
             >
               Actualizar
+            </Button>
+          </Paper>                              
+        </Grid>        
+      );
+    }    
+  };
+
+  //Permite actualizar un evento en el sistema
+  //Con el ánimo de no sobreescribir el panel, se utilizara el indice -2 para indicar que se crea
+  //un evento.
+  const CreateEvent = ({idx}) => { 
+    if (idx !== -2) {
+      return null;
+    }
+    else {      
+      let event = {
+        'event_name': '',
+        'event_category': '',
+        'event_place': '',
+        'event_address': '',
+        'event_initial_date': '',
+        'event_final_date': '',
+        'event_type': '',        
+      };      
+      //setCategory(event.event_category);                            
+      return (        
+        <Grid item xs={12} sm={6}>
+          <Paper className={classes.paper}>
+            <Typography className={classes.title} variant="h6" noWrap>
+                Crear nuevo evento
+            </Typography>
+            <TextField
+              className={classes.textField}
+              variant="outlined"
+              margin="normal"
+              required              
+              name="event_address"
+              label="Nuevo nombre del evento"
+              type="text"
+              id="event_title"
+              defaultValue={event.event_name}     
+              onChange={(ev) => {
+                event.event_name = ev.target.value;
+              }}
+            />
+            <TextField
+              className={classes.textField}
+              variant="outlined"
+              margin="normal"
+              required              
+              name="event_address"
+              label="Dirección del evento"
+              type="text"
+              id="event_address"
+              defaultValue={event.event_address}     
+              onChange={(ev) => {
+                event.event_address = ev.target.value;
+              }}
+            />
+            <TextField
+              className={classes.textField}
+              variant="outlined"
+              margin="normal"
+              required              
+              name="event_place"
+              label="Lugar del evento"
+              type="text"
+              id="event_place"
+              defaultValue={event.event_place}     
+              onChange={(ev) => {
+                event.event_place = ev.target.value;
+              }}
+            />
+            <FormControl variant="outlined" className={classes.formControl}>
+              <InputLabel 
+                className={classes.formLabel} 
+                htmlFor="filled-age-native-simple"
+              >
+                Categoria
+              </InputLabel>
+              <Select
+                native
+                value={category}
+                onChange={(ev) =>{
+                  ev.preventDefault();                  
+                  event.event_category = ev.target.value;
+                  //setCategory(event.event_category);                  
+                }}                
+              >                
+                <option value={"COURSE"}>Curso</option>
+                <option value={"CONFERENCE"}>Conferencia</option>
+                <option value={"SEMINAR"}>Seminario</option>
+                <option value={"CONGRESS"}>Congreso</option>
+              </Select>              
+            </FormControl>
+            <FormControl variant="outlined" className={classes.formControl}>
+              <InputLabel 
+                className={classes.formLabel} 
+                htmlFor="filled-age-native-simple"
+              >
+                Tipo de evento
+              </InputLabel>
+              <Select
+                native
+                value={type}
+                onChange={(ev) =>{
+                  ev.preventDefault();                  
+                  event.event_type = ev.target.value;
+                  //setType(event.event_type);
+                }}                
+              >                
+                <option value={"VIRTUAL"}>Virtual</option>
+                <option value={"PRESENCIAL"}>Presencial</option>                
+              </Select>              
+            </FormControl>
+            <FormControl variant="outlined" className={classes.formControl}>
+            <TextField
+              id="datetime-local"
+              label="Fecha de inicio"
+              type="datetime-local"
+              defaultValue={event.event_initial_date}
+              className={classes.textField}
+              InputLabelProps={{
+                shrink: true,
+              }}
+              onChange={(ev) =>{
+                console.log("Fecha seleccionada", ev.target.value);
+                event.event_initial_date = ev.target.value;
+              }}
+            />
+            <TextField
+              id="datetime-local"
+              label="Fecha final"
+              type="datetime-local"
+              defaultValue={event.event_final_date}
+              className={classes.textField}
+              InputLabelProps={{
+                shrink: true,
+              }}
+              onChange={(ev) =>{
+                console.log("Fecha seleccionada", ev.target.value);
+                event.event_final_date = ev.target.value;
+              }}
+            />
+            </FormControl>
+            <input 
+              accept="image/*"
+              className={classes.inputFile}
+              id="icon-button-file"
+              type="file"
+              onChange={(ev) =>{
+                ev.preventDefault();
+                event.thumbnail = readFile(ev);
+              }}
+            />
+            <label htmlFor="icon-button-file">                            
+              <IconButton color="primary" aria-label="upload picture" component="span">
+                <FileCopyIcon />                
+              </IconButton>
+            </label>
+            <Button
+              type="submit"
+              className={classes.detailButton}
+              variant="contained"
+              color="primary"              
+              onClick={(ev) => {                                
+                createEvent(event);
+                setActualEvent(-1); //Cerrar la ventana                
+              }}
+            >
+              Crear
             </Button>
           </Paper>                              
         </Grid>        
@@ -404,6 +558,7 @@ export default function PrimarySearchAppBar() {
             </Paper>
         </Grid>
         <UpdateEvent idx={actualEvent}/>
+        <CreateEvent idx={actualEvent}/>
       </Grid>
     </div>
   );

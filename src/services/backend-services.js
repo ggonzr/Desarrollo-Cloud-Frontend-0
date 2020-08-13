@@ -84,3 +84,35 @@ export async function updateEvent(event) {
   });
   return response;
 }
+
+export async function createEvent(event) {  
+  let formData = new FormData();
+  formData.set('event_address', event.event_address);
+  formData.set('event_category', event.event_category);
+  formData.set('event_final_date', event.event_final_date);
+  formData.set('event_initial_date', event.event_initial_date);
+  formData.set('event_name', event.event_name);
+  formData.set('event_place', event.event_place);
+  formData.set('event_type', event.event_type);
+  formData.set('thumbnail', event.thumbnail, event.thumbnail.name);
+  
+  try {
+    let token = `Token ${localStorage.getItem('token')}`;
+    let response = await axios({
+      method: 'post',
+      url: hostname + 'api/events/',
+      data: formData,
+      headers: {
+        'Authorization': token,
+        'content-type': 'multipart/form-data'
+      }
+    });
+
+    return response;  
+  } catch (error) {
+      console.log(error.response.data);
+      console.log(error.response.status);
+      console.log(error.response.headers);
+      console.log('Error message', error.message);
+  }  
+}
