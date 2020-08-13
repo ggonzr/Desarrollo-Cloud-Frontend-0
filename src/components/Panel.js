@@ -107,13 +107,21 @@ export default function PrimarySearchAppBar() {
     }    
   }, [history]);
 
-  React.useEffect(() => {
-    async function getData() {
+  React.useEffect(() => {    
+    async function getData() {      
       let response = await getAllEvents();       
       setEventList(response.data)
     } 
     getData();   
-  }, []);   
+  }, []);
+  
+  //Permite eliminar un elemento de la lista de eventos 
+  // y renderizar de nuevo el componente
+  const deleteElement = (idx) => {
+    let newList = [...eventList];
+    newList.splice(idx, 1);
+    setEventList(newList);
+  };
 
   const handleProfileMenuOpen = (event) => {
     setAnchorEl(event.currentTarget);
@@ -202,7 +210,7 @@ export default function PrimarySearchAppBar() {
           aria-labelledby="lista-de-eventos"          
           className={classes.eventList}
         >             
-        {list.map((el, idx) => <EventElement key={idx} info={el} classes={classes}/>)}       
+        {list.map((el, idx) => <EventElement key={idx} idx={idx} info={el} classes={classes} deleteElement={deleteElement}/>)}       
         </List>
       </div>
     );

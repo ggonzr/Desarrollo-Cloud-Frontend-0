@@ -50,3 +50,14 @@ export async function getAllEvents() {
   return response;
 }
 
+export async function deleteEvent(id) {
+  let token = `Token ${localStorage.getItem('token')}`;
+  let response = await axios({
+    method: 'delete',
+    url: hostname + 'api/events/' + id,
+    headers: {
+      'Authorization': token
+    }
+  });
+  return response;
+}

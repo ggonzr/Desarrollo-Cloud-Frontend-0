@@ -13,8 +13,9 @@ import PlaceIcon from '@material-ui/icons/Place';
 import ClassIcon from '@material-ui/icons/Class';
 import DuoIcon from '@material-ui/icons/Duo';
 import { Button } from '@material-ui/core';
+import { deleteEvent } from '../services/backend-services';
 
-export default function EventElement ({info, classes}) {
+export default function EventElement ({idx, info, classes, deleteElement}) {
     const [infoElement] = React.useState(info);
     const [open, setOpen] = React.useState(false);
 
@@ -24,8 +25,7 @@ export default function EventElement ({info, classes}) {
 
     const fechaInicio = new Date(infoElement.event_initial_date);
     const fechaFin = new Date(infoElement.event_final_date);
-
-    console.log("Elemento recibido", info)
+    
     return (
       <div>
       <ListItem button onClick={handleClick}>
@@ -86,7 +86,9 @@ export default function EventElement ({info, classes}) {
                     color="secondary"
                     onClick={(event) => {                
                         event.preventDefault();
-                        console.log("Eliminar clickeado")
+                        console.log("Eliminar clickeado");
+                        deleteElement(idx);
+                        deleteEvent(info.id);
                     }}
                 >
                     Eliminar
