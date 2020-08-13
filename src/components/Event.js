@@ -83,9 +83,7 @@ export default function EventElement ({idx, info, classes, deleteElement, update
             <Button
                     variant="contained"
                     color="secondary"
-                    onClick={(event) => {                
-                        event.preventDefault();
-                        console.log("Eliminar clickeado");
+                    onClick={(event) => {                                                                
                         deleteElement(idx);
                         deleteEvent(info.id);
                     }}

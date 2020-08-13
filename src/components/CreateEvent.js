@@ -12,7 +12,7 @@ import Grid from "@material-ui/core/Grid";
 import { createEvent } from "../services/backend-services";
 
 //Permite actualizar un evento en el sistema.
-export default function CreateEvent({classes, updateEventInferface}) {
+export default function CreateEvent({classes, updateEventInferface, addElement}) {
   const [event, setEvent] = useState({
     event_name: "",
     event_category: "",
@@ -172,7 +172,8 @@ export default function CreateEvent({classes, updateEventInferface}) {
           variant="contained"
           color="primary"
           onClick={(ev) => {
-            createEvent(event);
+            createEvent(event);  
+            addElement(event);          
             updateEventInferface({idx: -1}); //Cerrar la ventana
           }}
         >

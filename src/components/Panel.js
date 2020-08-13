@@ -112,7 +112,7 @@ export default function PrimarySearchAppBar() {
   const classes = useStyles();
   const history = useHistory();  
   const [eventList, setEventList] = React.useState([]);  
-  const [actualEvent, setActualEvent] = React.useState(-1);  
+  const [actualEvent, setActualEvent] = React.useState(-1);   
 
   //Comprobar si el usuario está autorizado  
   React.useLayoutEffect(() => {
@@ -129,6 +129,19 @@ export default function PrimarySearchAppBar() {
     } 
     getData();   
   }, []);
+
+  //Permite agregar un nuevo elemento a la lista
+  const addElement = (pEvent) => {
+    let newList = [...eventList, pEvent];
+    setEventList(newList);    
+  };
+
+  //Permite agregar un nuevo elemento a la lista
+  const updateElement = (idx, pEvent) => {
+    let newList = [...eventList];
+    newList[idx] = pEvent
+    setEventList(newList);    
+  };
   
   //Permite eliminar un elemento de la lista de eventos 
   // y renderizar de nuevo el componente
@@ -155,9 +168,11 @@ export default function PrimarySearchAppBar() {
       let element = eventList[el];
       return (
         <UpdateEvent
+          idx={el}
           pEvent={element}
           classes={classes}
           updateEventInferface={setActualEvent}
+          updateEventList={updateElement}
         />
       );      
     }    
@@ -166,6 +181,7 @@ export default function PrimarySearchAppBar() {
         <CreateEvent                    
           classes={classes}
           updateEventInferface={setActualEvent}
+          addElement={addElement}
         />
       );
     }

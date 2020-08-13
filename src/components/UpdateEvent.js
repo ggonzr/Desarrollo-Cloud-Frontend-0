@@ -12,9 +12,11 @@ import moment from "moment";
 
 //Permite actualizar un evento en el sistema
 export default function UpdateEvent({
+  idx,
   pEvent,
   classes,
   updateEventInferface,
+  updateEventList,
 }) {   
   pEvent.event_initial_date = moment(
     pEvent.event_initial_date,
@@ -150,6 +152,7 @@ export default function UpdateEvent({
           color="primary"
           onClick={(ev) => {
             updateEvent(event);
+            updateEventList(event);
             updateEventInferface(-1); //Cerrar la ventana
           }}
         >
