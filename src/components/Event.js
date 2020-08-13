@@ -15,7 +15,7 @@ import DuoIcon from '@material-ui/icons/Duo';
 import { Button } from '@material-ui/core';
 import { deleteEvent } from '../services/backend-services';
 
-export default function EventElement ({idx, info, classes, deleteElement}) {
+export default function EventElement ({idx, info, classes, deleteElement, updateElement}) {
     const [infoElement] = React.useState(info);
     const [open, setOpen] = React.useState(false);
 
@@ -74,7 +74,8 @@ export default function EventElement ({idx, info, classes, deleteElement}) {
                     color="primary"
                     onClick={(event) => {                
                         event.preventDefault();
-                        console.log("Actualizar clickeado")
+                        console.log("Actualizar clickeado");
+                        updateElement({idx: idx});
                     }}
                 >
                     Actualizar
