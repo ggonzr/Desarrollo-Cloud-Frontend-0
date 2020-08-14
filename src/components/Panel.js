@@ -131,7 +131,7 @@ export default function PrimarySearchAppBar() {
   }, []);
 
   //Permite agregar un nuevo elemento a la lista
-  const addElement = (pEvent) => {
+  const addElement = (pEvent) => {    
     let newList = [...eventList, pEvent];
     setEventList(newList);    
   };
@@ -142,12 +142,15 @@ export default function PrimarySearchAppBar() {
     newList[idx] = pEvent
     setEventList(newList);    
   };
-  
+
   //Permite eliminar un elemento de la lista de eventos 
   // y renderizar de nuevo el componente
   const deleteElement = (idx) => {
     let newList = [...eventList];
     newList.splice(idx, 1);
+    if (newList.length === 0) {
+      setActualEvent(-1);
+    }
     setEventList(newList);
   };   
 

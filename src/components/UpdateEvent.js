@@ -152,7 +152,7 @@ export default function UpdateEvent({
           color="primary"
           onClick={(ev) => {
             updateEvent(event);
-            updateEventList(event);
+            updateEventList(idx, event);
             updateEventInferface(-1); //Cerrar la ventana
           }}
         >
